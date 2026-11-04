@@ -1,0 +1,45 @@
+flowchart TD
+    subgraph UserInterface ["User Layer"]
+        User["User"]
+        App["Application Interface (CLI / Streamlit App)"]
+    end
+
+    subgraph AgenticCore ["Agentic AI Workflow"]
+        InputGuard["Input Guardrail (Sanitization & Safety Check)"]
+        Planner["Intent Planner (Extracts Genre, Mood, Energy, Exclusions)"]
+        RAGRetriever["RAG Catalog Retriever (Attribute Scoring & Similarity)"]
+        OutputGuard["Output Guardrails (Grounding, Bounds, Diversity Checks)"]
+        Explainer["Explanation Generator (Natural Language Reasoning)"]
+    end
+
+    subgraph DataStore ["Data Layer"]
+        Catalog[("Song Catalog CSV Database")]
+    end
+
+    subgraph HumanAndEvaluation ["Verification and Feedback"]
+        FeedbackLoop["Human-in-the-Loop Feedback (User Playlist Refinement)"]
+        AutomatedTests["Automated Reliability Suite (Pytest: Grounding, Guardrails, Determinism)"]
+    end
+
+    %% Data flow
+    User -->|"Submits natural language query"| App
+    App -->|"Sends raw prompt"| InputGuard
+    InputGuard -->|"Validated prompt"| Planner
+    InputGuard -.->|"Rejection error if unsafe"| App
+
+    Planner -->|"Structured search parameters"| RAGRetriever
+    Catalog -->|"Song records and audio attributes"| RAGRetriever
+
+    RAGRetriever -->|"Ranked candidate songs"| OutputGuard
+    OutputGuard -->|"Verified songs & confidence scores"| Explainer
+    OutputGuard -.->|"Re-ranks if diversity check flags duplicate artist"| OutputGuard
+
+    Explainer -->|"Formatted recommendations with match explanations"| App
+    App -->|"Delivers final playlist"| User
+
+    %% Human in the loop flow
+    User -->|"Provides refinement feedback"| FeedbackLoop
+    FeedbackLoop -->|"Updates intent parameters"| Planner
+
+    %% Testing flow
+    AutomatedTests -->|"Tests system components"| AgenticCore
