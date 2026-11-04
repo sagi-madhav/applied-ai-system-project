@@ -2,7 +2,18 @@ import re
 import logging
 from dataclasses import dataclass, field
 from typing import List, Dict, Tuple, Optional, Any
-from src.recommender import Song, load_songs
+import sys
+from pathlib import Path
+
+# Ensure project root is in sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+try:
+    from src.recommender import Song, load_songs
+except ModuleNotFoundError:
+    from recommender import Song, load_songs
 
 # Configure structured logging
 logger = logging.getLogger("music_agent")
@@ -239,7 +250,10 @@ class MusicCuratorAgent:
         logger.info("MusicCuratorAgent initialized with %d catalog tracks.", len(self.catalog))
 
     def _load_catalog(self, path: str) -> List[Song]:
-        dict_songs = load_songs(path)
+        file_path = Path(path)
+        if not file_path.is_absolute() and not file_path.exists():
+            file_path = PROJECT_ROOT / path
+        dict_songs = load_songs(str(file_path))
         return [
             Song(
                 id=d["id"],

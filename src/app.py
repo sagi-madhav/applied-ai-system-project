@@ -5,9 +5,21 @@ Provides an interactive user interface for natural language music queries,
 agent plan visualization, guardrail verification, and human-in-the-loop feedback.
 """
 
+import sys
+from pathlib import Path
+
+# Ensure project root is in sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import streamlit as st
 import pandas as pd
-from src.agent import MusicCuratorAgent, GuardrailEngine
+
+try:
+    from src.agent import MusicCuratorAgent, GuardrailEngine
+except ModuleNotFoundError:
+    from agent import MusicCuratorAgent, GuardrailEngine
 
 st.set_page_config(page_title="Music Curator AI", layout="wide")
 
